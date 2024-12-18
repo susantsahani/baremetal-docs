@@ -22,11 +22,16 @@ kubectl delete rolebinding cilium-config-agent -n kube-system
 kubectl delete secret sh.helm.release.v1.cilium.v1 -n kube-system
 ```
 
+Now let's install cilium .
+```
+cilium uninstall
+cilium install
+```
+
 Note is that the helm value `socketLB.hostNamespaceOnly=true` should be configured to [ensure compatibility with KubeVirt’s networking implementation](https://docs.cilium.io/en/stable/network/kubernetes/kubeproxy-free/#socket-loadbalancer-bypass-in-pod-namespace) for virtual machine devices.
 
-Now let's install cilium .
-
 ```
+helm repo add cilium https://helm.cilium.io/
 helm upgrade cilium cilium/cilium --version 1.16.4 \
    --namespace kube-system \
    --set cni.exclusive=false \
@@ -187,30 +192,30 @@ spec:
         - containerDisk:
             image: tedezed/ubuntu-container-disk:22.0
           name: containerdisk
-        - cloudInitNoCloud:
-            userData: |
-              #cloud-config
-              password: ubuntu
-              chpasswd: { expire: False }
-              runcmd:
-                - sudo apt update
-                - sudo apt install nginx -y
-                - echo "IyEvYmluL2Jhc2gKCiMgR2VuZXJhdGUgdGhlIFNlY3JldCBQYWdlCmVjaG8gIjxoMT5TZWNyZXQgUGFnZTwvaDE+PHAgc2VjcmV0IHBhZ2U8L3A+IiA+IC92YXIvd3d3L2h0bWwvc2VjcmV0Lmh0bWwKCkdlbmVyYXRlIFZNIERldGFpbHMgUGFnZSB3aXRoIEhvc3RuYW1lIGFuZCBJUAplY2hvICJcbjxoMT5WTURldGFpbHM8L2gxPjxwPk5hbWU6ICQoaG9zdG5hbWUpPC9wPjxwPklQOiAkKGhvc3RuYW1lIC1JKTwvcD48cD5Mb2NhbGU6ICQobG9jYWxlKTwvcD4iID4gL3Zhci93d3cvaHRtbC9kZXRhaWxzLmh0bWwK" | base64 --decode | sudo bash
-                - sudo sed -i 's|try_files $uri $uri/ =404;|try_files $uri $uri/ $uri.html =404;|' /etc/nginx/sites-available/default
-                - sudo systemctl restart nginx
-          name: cloudinitdisk
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: nginx
-spec:
-  ports:
-    - port: 80
-      targetPort: 80
-      protocol: TCP
-  selector:
-    kubevirt.io/domain: nginx-vm
+           - cloudInitNoCloud:
+               userData: |
+                 #cloud-config
+                 password: ubuntu
+                 chpasswd: { expire: False }
+                 runcmd:
+                   - sudo apt update
+                   - sudo apt install nginx -y
+                   - echo "IyEvYmluL2Jhc2gKCiMgR2VuZXJhdGUgdGhlIFNlY3JldCBQYWdlCmVjaG8gIjxoMT5TZWNyZXQgUGFnZTwvaDE+PHAgc2VjcmV0IHBhZ2U8L3A+IiA+IC92YXIvd3d3L2h0bWwvc2VjcmV0Lmh0bWwKCkdlbmVyYXRlIFZNIERldGFpbHMgUGFnZSB3aXRoIEhvc3RuYW1lIGFuZCBJUAplY2hvICJcbjxoMT5WTURldGFpbHM8L2gxPjxwPk5hbWU6ICQoaG9zdG5hbWUpPC9wPjxwPklQOiAkKGhvc3RuYW1lIC1JKTwvcD48cD5Mb2NhbGU6ICQobG9jYWxlKTwvcD4iID4gL3Zhci93d3cvaHRtbC9kZXRhaWxzLmh0bWwK" | base64 --decode | sudo bash
+                   - sudo sed -i 's|try_files $uri $uri/ =404;|try_files $uri $uri/ $uri.html =404;|' /etc/nginx/sites-available/default
+                   - sudo systemctl restart nginx
+             name: cloudinitdisk
+   ---
+   apiVersion: v1
+   kind: Service
+   metadata:
+     name: nginx
+   spec:
+     ports:
+       - port: 80
+         targetPort: 80
+         protocol: TCP
+     selector:
+       kubevirt.io/domain: nginx-vm
 
 > k apply -f ./ubuntu.yaml
 virtualmachine.kubevirt.io/kubevirt-demo created
