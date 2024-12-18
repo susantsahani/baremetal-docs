@@ -32,8 +32,9 @@ Note is that the helm value `socketLB.hostNamespaceOnly=true` should be configur
 
 ```
 helm repo add cilium https://helm.cilium.io/
-helm upgrade cilium cilium/cilium --version 1.16.4 \
+helm upgrade --install cilium cilium/cilium --version 1.16.5 \
    --namespace kube-system \
+   --set operator.replicas=1 \
    --set cni.exclusive=false \
    --set socketLB.hostNamespaceOnly=true \
    --set bpf.masquerade=true \
