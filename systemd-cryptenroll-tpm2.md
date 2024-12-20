@@ -1,4 +1,4 @@
-### How to set up systemd-cryptenroll for tpm2 devices for ubuntu
+### Setup TPM2 autodecrypt with systemd-cryptenroll on ubuntu
 
 
 #### Install dracut
