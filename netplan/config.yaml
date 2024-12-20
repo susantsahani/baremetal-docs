@@ -1,0 +1,80 @@
+network:
+    version: 2
+    renderer: networkd
+    ethernets:
+        id0:
+            match:
+                macaddress: 00:62:0b:26:2e:c0
+            addresses:
+            - 10.20.22.216/24
+            nameservers:
+                addresses: &id001
+                - 8.8.8.8
+                - 8.8.4.4
+            routes:
+            -   to: default
+                via: 10.20.22.1
+        id1:
+            match:
+                macaddress: 00:62:0B:26:2E:C1
+            accept-ra: false
+            dhcp4: false
+            dhcp6: false
+        id2:
+            match:
+                macaddress: 04:32:01:44:1F:60
+            accept-ra: false
+            dhcp4: false
+            dhcp6: false
+        id3:
+            match:
+                macaddress: 04:32:01:44:1F:61
+            accept-ra: false
+            dhcp4: false
+            dhcp6: false
+    bridges:
+        armada-bridge:
+            accept-ra: false
+            dhcp4: false
+            dhcp6: false
+            addresses:
+            - 10.20.22.116/25
+            nameservers:
+                addresses: *id001
+            routes:
+            -   to: 10.20.22.0/25
+                via: 10.20.22.1
+                table: 10
+            -   to: default
+                via: 10.20.22.1
+                table: 10
+            routing-policy:
+            -   from: 10.20.22.116
+                table: 10
+                priority: 35765
+            -   to: 10.20.22.116
+                table: 10
+                priority: 35764
+            parameters:
+                stp: true
+                forward-delay: 4
+            interfaces:
+            - vlan.2022
+    vlans:
+        vlan.2022:
+            id: 2022
+            link: armada-bond
+    bonds:
+        armada-bond:
+            interfaces:
+            - id1
+            - id2
+            - id3
+            accept-ra: false
+            dhcp4: false
+            dhcp6: false
+            parameters:
+                mode: 802.3ad
+                transmit-hash-policy: layer3+4
+                mii-monitor-interval: 1
+                lacp-rate: fast
