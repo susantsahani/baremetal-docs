@@ -1,17 +1,23 @@
-# How to set up systemd-cryptenroll for tpm2 devices for ubuntu
+### How to set up systemd-cryptenroll for tpm2 devices for ubuntu
 
 
-# Install dracut
+#### Install dracut
 
+See [Install dracut](https://discourse.ubuntu.com/t/please-try-out-dracut/48975)
+
+```bash
 > sudo cp /boot/initrd.img-$(uname -r) /boot/initrd.img-$(uname -r).orig
 > sudo apt install dracut-core
 > sudo dracut -H --hostonly-mode=sloppy --force
 
 # remove update-initramfs
 sus@zeus:~$ sudo apt remove update-initramfs
+```
 
-# Configure 
+#### Configure systemd-cryptenroll 
 
+Figure out the encrypted parts
+```
 sus@zeus:~$ sudo lsblk -lf
 NAME                  FSTYPE      FSVER    LABEL UUID                                   FSAVAIL FSUSE% MOUNTPOINTS
 sr0
@@ -28,7 +34,6 @@ PATH        DEVICE     DRIVER
 /dev/tpmrm0 VMW0004:00 tpm_tis
 
 sus@zeus:~$ sudo cryptsetup luksDump /dev/nvme0n1p3
-[sudo] password for sus:
 LUKS header information
 Version:        2
 Epoch:          3
@@ -74,12 +79,19 @@ Digests:
                     3a 60 3f 49 ee 26 c0 39 1f 4f 23 99 ce 06 0f 8a
 
 
-# /dev/nvme0n1p3 is your LUKS partition. Enter your LUKS password when prompt, and restart, you should not see a password prompt.
-> sudo systemd-cryptenroll --wipe-slot tpm2 --tpm2-device auto --tpm2-pcrs "1+3+5+7+11+12+14+15" /dev/nvme0n1p3
+```
 
-# edit /etc/crypttab
+#### /dev/nvme0n1p3 is your LUKS partition. Enter your LUKS password when prompt, and restart, you should not see a password prompt.
+```bash
+> sudo systemd-cryptenroll --wipe-slot tpm2 --tpm2-device auto --tpm2-pcrs "1+3+5+7+11+12+14+15" /dev/nvme0n1p3
+```
+
+#### Edit /etc/crypttab
+```
 sus@zeus:~$ sudo cat /etc/crypttab
 dm_crypt-0 UUID=a6825535-0609-4501-a464-ac23d96c834f none luks,discard,tpm2-device=auto
-
+```
+#### Update dracut
+```
 > sudo dracut -H --hostonly-mode=sloppy --force
 > sudo reboot
