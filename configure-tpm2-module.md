@@ -1,4 +1,4 @@
-### Configure and use your TPM 2.0 module on Linux
+### Configure and use your TPM 2.0 module on Ubuntu
 
 #### Intro
 
