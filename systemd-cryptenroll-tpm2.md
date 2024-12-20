@@ -80,8 +80,7 @@ Digests:
 
 
 ```
-
-#### /dev/nvme0n1p3 is your LUKS partition. Enter your LUKS password when prompt, and restart, you should not see a password prompt.
+```/dev/nvme0n1p3``` is the LUKS partition. Enter your LUKS password when prompt, and restart, you should not see a password prompt.
 ```bash
 > sudo systemd-cryptenroll --wipe-slot tpm2 --tpm2-device auto --tpm2-pcrs "1+3+5+7+11+12+14+15" /dev/nvme0n1p3
 ```
