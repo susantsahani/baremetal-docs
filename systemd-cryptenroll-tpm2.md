@@ -1,5 +1,30 @@
 ### Setup TPM2 autodecrypt with systemd-cryptenroll on ubuntu
 
+The ```systemd-cryptsetup``` component of systemd (which is responsible for assembling encrypted volumes during boot) gained direct support for unlocking encrypted storage with three types of security hardware:
+
+    Unlocking with FIDO2 security tokens (well, at least with those which implement the hmac-secret extension; most do). i.e. your YubiKeys (series 5 and above), Nitrokey FIDO2, AuthenTrend ATKey.Pro and such.
+
+    Unlocking with TPM2 security chips (pretty ubiquitous on non-budget PCs/laptops/…)
+
+    Unlocking with PKCS#11 security tokens, i.e. your smartcards and older YubiKeys (the ones that implement PIV). (Strictly speaking this was supported on older systemd already, but was a lot more "manual".)
+
+Unlocking with TPM2
+
+Most modern (non-budget) PC hardware (and other kind of hardware too) nowadays comes with a TPM2 security chip. In many ways a TPM2 chip is a smartcard that is soldered onto the mainboard of your system. Unlike your usual USB-connected security tokens you thus cannot remove them from your PC, which means they address quite a different security scenario: they aren't immediately comparable to a physical key you can take with you that unlocks some door, but they are a key you leave at the door, but that refuses to be turned by anyone but you.
+
+Here's how you enroll your LUKS2 volume with your TPM2 chip:
+```bash
+# systemd-cryptenroll --tpm2-device=auto --tpm2-pcrs=7 /dev/sda5
+```
+
+Modify your /etc/crypttab to unlock via TPM2:
+```
+myvolume /dev/sda5 - tpm2-device=auto
+```
+
+
+#### Steps to unlock volume via systemd-cryptenroll
+
 
 #### Install dracut
 
