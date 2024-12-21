@@ -115,7 +115,7 @@ Digests:
 
 Verify and see the tokens
 ```
- sudo cryptsetup luksDump /dev/nvme0n1p3
+> sudo cryptsetup luksDump /dev/nvme0n1p3
 [sudo] password for sus: 
 LUKS header information
 Version:        2
