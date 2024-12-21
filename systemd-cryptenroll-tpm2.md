@@ -214,5 +214,6 @@ dm_crypt-0 UUID=a6825535-0609-4501-a464-ac23d96c834f none luks,discard,tpm2-devi
 ```
 > sudo dracut -H --hostonly-mode=sloppy --force
 > sudo reboot
+```
 
 After reboot you should not see a password prompt
