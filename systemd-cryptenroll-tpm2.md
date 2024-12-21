@@ -3,7 +3,7 @@
 
 #### Install dracut
 
-By default dracut is not installed and the default [update-initramfs] (https://manpages.ubuntu.com/manpages/jammy/man8/update-initramfs.8.html)
+By default dracut is not installed and the default [update-initramfs](https://manpages.ubuntu.com/manpages/jammy/man8/update-initramfs.8.html)
 does not support systemd hooks out of the box. Hence we need to install dracut which works seamlessly. 
 
 See [Install dracut](https://discourse.ubuntu.com/t/please-try-out-dracut/48975)
