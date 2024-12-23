@@ -155,10 +155,15 @@ Deploy the Virtual Machine using the command:
 
 ```
 > cat ubuntu.yaml
-apiVersion: kubevirt.io/v1
+
+```
+
+```
+aapiVersion: kubevirt.io/v1
 kind: VirtualMachine
 metadata:
-  name: kubevirt-demo
+  namespace: kubevirt-demo
+  name: nginx-vm
 spec:
   running: false
   template:
@@ -181,60 +186,74 @@ spec:
               disk:
                 bus: virtio
           interfaces:
-            - name: default
-              masquerade: {}
+          - name: default
+            masquerade: {}
         resources:
           requests:
             memory: 4096Mi
       networks:
-        - name: default
-          pod: {}
+      - name: default
+        pod: {}
       volumes:
-        - containerDisk:
-            image: tedezed/ubuntu-container-disk:22.0
-          name: containerdisk
-           - cloudInitNoCloud:
-               userData: |
-                 #cloud-config
-                 password: ubuntu
-                 chpasswd: { expire: False }
-                 runcmd:
-                   - sudo apt update
-                   - sudo apt install nginx -y
-                   - echo "IyEvYmluL2Jhc2gKCiMgR2VuZXJhdGUgdGhlIFNlY3JldCBQYWdlCmVjaG8gIjxoMT5TZWNyZXQgUGFnZTwvaDE+PHAgc2VjcmV0IHBhZ2U8L3A+IiA+IC92YXIvd3d3L2h0bWwvc2VjcmV0Lmh0bWwKCkdlbmVyYXRlIFZNIERldGFpbHMgUGFnZSB3aXRoIEhvc3RuYW1lIGFuZCBJUAplY2hvICJcbjxoMT5WTURldGFpbHM8L2gxPjxwPk5hbWU6ICQoaG9zdG5hbWUpPC9wPjxwPklQOiAkKGhvc3RuYW1lIC1JKTwvcD48cD5Mb2NhbGU6ICQobG9jYWxlKTwvcD4iID4gL3Zhci93d3cvaHRtbC9kZXRhaWxzLmh0bWwK" | base64 --decode | sudo bash
-                   - sudo sed -i 's|try_files $uri $uri/ =404;|try_files $uri $uri/ $uri.html =404;|' /etc/nginx/sites-available/default
-                   - sudo systemctl restart nginx
-             name: cloudinitdisk
-   ---
-   apiVersion: v1
-   kind: Service
-   metadata:
-     name: nginx
-   spec:
-     ports:
-       - port: 80
-         targetPort: 80
-         protocol: TCP
-     selector:
-       kubevirt.io/domain: nginx-vm
+      - containerDisk:
+          image: tedezed/ubuntu-container-disk:22.0
+        name: containerdisk
+      - cloudInitNoCloud:
+          userData: |
+            #cloud-config
+            password: ubuntu
+            chpasswd: { expire: False }
+            runcmd:
+              - sudo apt update
+              - sudo apt install nginx -y
+              - echo "IyEvYmluL2Jhc2gKCiMgR2VuZXJhdGUgdGhlIFNlY3JldCBQYWdlCmVjaG8gIjxoMT5TZWNyZXQgUGFnZTwvaDE+PHAgc2VjcmV0IHBhZ2U8L3A+IiA+IC92YXIvd3d3L2h0bWwvc2VjcmV0Lmh0bWwKCkdlbmVyYXRlIFZNIERldGFpbHMgUGFnZSB3aXRoIEhvc3RuYW1lIGFuZCBJUAplY2hvICJcbjxoMT5WTURldGFpbHM8L2gxPjxwPk5hbWU6ICQoaG9zdG5hbWUpPC9wPjxwPklQOiAkKGhvc3RuYW1lIC1JKTwvcD48cD5Mb2NhbGU6ICQobG9jYWxlKTwvcD4iID4gL3Zhci93d3cvaHRtbC9kZXRhaWxzLmh0bWwK" | base64 --decode | sudo bash
+              - sudo sed -i 's|try_files $uri $uri/ =404;|try_files $uri $uri/ $uri.html =404;|' /etc/nginx/sites-available/default
+              - sudo systemctl restart nginx
+        name: cloudinitdisk
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx
+  namespace: kubevirt-demo
+spec:
+  ports:
+  - port: 80
+    targetPort: 80
+    protocol: TCP
+  selector:
+    kubevirt.io/domain: nginx-vm
+    name: nginx-vm
+```
+Apply
 
+```
 > k apply -f ./ubuntu.yaml
 virtualmachine.kubevirt.io/kubevirt-demo created
 service/nginx created
+```
 
+```
 > k get vms,pods,svc
 NAME                                       AGE   STATUS    READY
 virtualmachine.kubevirt.io/kubevirt-demo   30s   Stopped   False
 
 NAME                   TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)     AGE
 service/nginx          ClusterIP   10.97.189.63     <none>        80/TCP      30s
+```
 
+```
 > k get vms
 NAME            AGE   STATUS    READY
 kubevirt-demo   99s   Stopped   False
+```
+
+```
 > virtctl start kubevirt-demo
 VM kubevirt-demo was scheduled to start
+```
 
+```
 > k get vms
 NAME            AGE    STATUS    READY
 kubevirt-demo   114s   Running   True
@@ -271,51 +290,53 @@ default via 10.0.2.1 dev enp1s0 proto dhcp src 10.0.2.2 metric 100
 ```
 
   
-
-Now ping the admin machine colo. It's pingable
+Now ping the desired machine. It's pingable
 
 ```
-ubuntu@kubevirt-demo:~$ ping 10.20.22.166
-PING 10.20.22.166 (10.20.22.166) 56(84) bytes of data.
-64 bytes from 10.20.22.166: icmp_seq=1 ttl=61 time=0.467 ms
-64 bytes from 10.20.22.166: icmp_seq=2 ttl=61 time=0.518 ms
-64 bytes from 10.20.22.166: icmp_seq=3 ttl=61 time=0.499 ms
+ubuntu@kubevirt-demo:~$ ping XX.XX.XX.XX
+PING XX.XX.XX.XX (XX.XX.XX.XX) 56(84) bytes of data.
+64 bytes from XX.XX.XX.XX: icmp_seq=1 ttl=61 time=0.467 ms
+64 bytes from XX.XX.XX.XX: icmp_seq=2 ttl=61 time=0.518 ms
+64 bytes from XX.XX.XX.XX: icmp_seq=3 ttl=61 time=0.499 ms
 ^Z
 [1]+  Stopped                 ping 10.20.22.166
 ```
 
-  
-
 let's apply a simple cilium network policy to block admin machine
 
 ```
-> cat block-admin.yaml
+> cat block-macine.yaml
 apiVersion: "cilium.io/v2"
 kind: CiliumNetworkPolicy
 metadata:
   name: "cidr-rule-block-admin"
+  namespace: kubevirt-demo
 spec:
   endpointSelector:
     matchLabels:
       name: kubevirt-demo
       name: nginx-vm
   egress:
-  - toCIDRSet:
-    - cidr: 10.20.22.0/24
-      except:
-      - 10.20.22.166/32
+    - toEntities:
+      - host
+    - toCIDRSet:
+      - cidr: 0.0.0.0/0
+        except:
+          -  XX.XX.XX.XX/32
+```
 
+Now apply the rule
+```
 > k apply -f block-admin.yaml
-ciliumnetworkpolicy.cilium.io/cidr-rule-block-admin created
+ciliumnetworkpolicy.cilium.io/cidr-rule-block-machine created
 ```
 
 Now ping the admin machine from inside the VM
-
 ```
-ubuntu@kubevirt-demo:~$ ping 10.20.22.166
-PING 10.20.22.166 (10.20.22.166) 56(84) bytes of data.
+ubuntu@kubevirt-demo:~$ ping  XX.XX.XX.XX 
+PING  XX.XX.XX.XX  ( XX.XX.XX.XX ) 56(84) bytes of data.
 ^Z
-[2]+  Stopped                 ping 10.20.22.166
+[2]+  Stopped                 ping  XX.XX.XX.XX 
 ubuntu@kubevirt-demo:~$
 ```
 
@@ -323,40 +344,45 @@ we can also inspect the policy details via `kubectl`
 
 ```
 > kubectl get cnp
+❯ kubectl get cnp -n kubevirt-demo
 NAME                    AGE
-cidr-rule-block-admin   2m45s
-> kubectl describe cnp cidr-rule-block-admin
+allow-dns               8m2s
+cidr-rule-block-admin   51m
+```
+
+```
+❯ k describe cnp cidr-rule-block-admin -n kubevirt-demo
 Name:         cidr-rule-block-admin
-Namespace:    default
+Namespace:    kubevirt-demo
 Labels:       <none>
 Annotations:  <none>
 API Version:  cilium.io/v2
 Kind:         CiliumNetworkPolicy
 Metadata:
-  Creation Timestamp:  2024-12-16T08:27:06Z
+  Creation Timestamp:  2024-12-23T05:38:13Z
   Generation:          1
-  Resource Version:    4293743
-  UID:                 767d7ee9-add0-47d2-85e8-5208cb2a57d1
+  Resource Version:    685963
+  UID:                 d8477c11-cdf7-479a-bf1d-04f93cbb3007
 Spec:
   Egress:
+    To Entities:
+      host
     To CIDR Set:
-      Cidr:  10.20.22.0/24
+      Cidr:  0.0.0.0/0
       Except:
-        10.20.22.166/32
+        XX.XX.XX.XX/32
   Endpoint Selector:
     Match Labels:
       Name:  nginx-vm
 Status:
   Conditions:
-    Last Transition Time:  2024-12-16T08:27:06Z
+    Last Transition Time:  2024-12-23T05:38:13Z
     Message:               Policy validation succeeded
     Status:                True
     Type:                  Valid
 Events:                    <none>
 ```
-
   
-
 Note: Here the cilium rule is applied based on the label _Name: nginx-vm_
 
 ```
@@ -378,6 +404,82 @@ spec:
     spec:
 ```
 
+#### Condifure DNS
+
+```
+ubuntu@nginx-vm:~$ ping google.com
+ping: google.com: Temporary failure in name resolution
+```
+
+```
+❯ hubble observe --follow  -n kubevirt-demo
+Dec 23 06:19:27.279: kubevirt-demo/virt-launcher-nginx-vm-7lx4p:54117 (ID:23070) <> kube-system/coredns-9cf7fc5cc-7wr4m:53 (ID:42422) policy-verdict:none EGRESS DENIED (UDP)
+Dec 23 06:19:27.279: kubevirt-demo/virt-launcher-nginx-vm-7lx4p:54117 (ID:23070) <> kube-system/coredns-9cf7fc5cc-7wr4m:53 (ID:42422) Policy denied DROPPED (UDP)
+Dec 23 06:19:27.279: kubevirt-demo/virt-launcher-nginx-vm-7lx4p:60099 (ID:23070) <> kube-system/coredns-9cf7fc5cc-7wr4m:53 (ID:42422) policy-verdict:none EGRESS DENIED (UDP)
+Dec 23 06:19:27.279: kubevirt-demo/virt-launcher-nginx-vm-7lx4p:60099 (ID:23070) <> kube-system/coredns-9cf7fc5cc-7wr4m:53 (ID:42422) Policy denied DROPPED (UDP)
+Dec 23 06:19:27.279: kubevirt-demo/virt-launcher-nginx-vm-7lx4p:38034 (ID:23070) <> kube-system/coredns-9cf7fc5cc-cfc6n:53 (ID:42422) policy-verdict:none EGRESS DENIED (UDP)
+Dec 23 06:19:27.279: kubevirt-demo/virt-launcher-nginx-vm-7lx4p:38034 (ID:23070) <> kube-system/coredns-9cf7fc5cc-cfc6n:53 (ID:42422) Policy denied DROPPED (UDP)
+Dec 23 06:19:27.279: kubevirt-demo/virt-launcher-nginx-vm-7lx4p:49863 (ID:23070) <> kube-system/coredns-9cf7fc5cc-cfc6n:53 (ID:42422) policy-verdict:none EGRESS DENIED (UDP)
+Dec 23 06:19:27.279: kubevirt-demo/virt-launcher-nginx-vm-7lx4p:49863 (ID:23070) <> kube-system/coredns-9cf7fc5cc-cfc6n:53 (ID:42422) Policy denied DROPPED (UDP)
+Dec 23 06:19:32.529: kubevirt-demo/virt-launcher-nginx-vm-7lx4p:54117 (ID:23070) <> kube-system/coredns-9cf7fc5cc-7wr4m:53 (ID:42422) policy-verdict:none EGRESS DENIED (UDP)
+Dec 23 06:19:32.529: kubevirt-demo/virt-launcher-nginx-vm-7lx4p:54117 (ID:23070) <> kube-system/coredns-9cf7fc5cc-7wr4m:53 (ID:42422) Policy denied DROPPED (UDP)
+Dec 23 06:19:32.529: kubevirt-demo/virt-launcher-nginx-vm-7lx4p:49863 (ID:23070) <> kube-system/coredns-9cf7fc5cc-cfc6n:53 (ID:42422) policy-verdict:none EGRESS DENIED (UDP)
+```
+
+Create rule for DNS
+```
+❯ cat allow-dns.yaml
+apiVersion: "cilium.io/v2"
+kind: CiliumNetworkPolicy
+metadata:
+  name: "allow-dns"
+  namespace: kubevirt-demo
+spec:
+  endpointSelector:
+    matchLabels:
+      name: kubevirt-demo
+      name: nginx-vm
+  egress:
+    - toEndpoints:
+      - matchLabels:
+          io.kubernetes.pod.namespace: kube-system
+          k8s-app: kube-dns
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: UDP
+          rules:
+            dns:
+              - matchPattern: "*"
+```
+
+
+```
+ubuntu@nginx-vm:~$ curl google.com
+<HTML><HEAD><meta http-equiv="content-type" content="text/html;charset=utf-8">
+<TITLE>301 Moved</TITLE></HEAD><BODY>
+<H1>301 Moved</H1>
+The document has moved
+<A HREF="http://www.google.com/">here</A>.
+</BODY></HTML>
+```
+
+See from hubble it's allowed
+```
+ec 23 06:33:12.761: kubevirt-demo/virt-launcher-nginx-vm-7lx4p:51496 (ID:23070) -> kube-system/coredns-9cf7fc5cc-7wr4m:53 (ID:42422) dns-request proxy FORWARDED (DNS Query google.com. A)
+Dec 23 06:33:12.761: kubevirt-demo/virt-launcher-nginx-vm-7lx4p:56200 (ID:23070) -> kube-system/coredns-9cf7fc5cc-7wr4m:53 (ID:42422) dns-request proxy FORWARDED (DNS Query google.com. AAAA)
+Dec 23 06:33:12.764: kubevirt-demo/virt-launcher-nginx-vm-7lx4p:56200 (ID:23070) <- kube-system/coredns-9cf7fc5cc-7wr4m:53 (ID:42422) dns-response proxy FORWARDED (DNS Answer RCode: Server Failure  TTL: 4294967295 (Proxy google.com. AAAA))
+Dec 23 06:33:12.764: kubevirt-demo/virt-launcher-nginx-vm-7lx4p:51496 (ID:23070) <- kube-system/coredns-9cf7fc5cc-7wr4m:53 (ID:42422) dns-response proxy FORWARDED (DNS Answer RCode: Server Failure  TTL: 4294967295 (Proxy google.com. A))
+Dec 23 06:33:12.764: kubevirt-demo/virt-launcher-nginx-vm-7lx4p:56200 (ID:23070) -> kube-system/coredns-9cf7fc5cc-7wr4m:53 (ID:42422) dns-request proxy FORWARDED (DNS Query google.com. AAAA)
+Dec 23 06:33:12.764: kubevirt-demo/virt-launcher-nginx-vm-7lx4p:51496 (ID:23070) -> kube-system/coredns-9cf7fc5cc-7wr4m:53 (ID:42422) dns-request proxy FORWARDED (DNS Query google.com. A)
+Dec 23 06:33:13.707: kubevirt-demo/virt-launcher-nginx-vm-7lx4p:51496 (ID:23070) <- kube-system/coredns-9cf7fc5cc-7wr4m:53 (ID:42422) to-proxy FORWARDED (UDP)
+Dec 23 06:33:13.707: kubevirt-demo/virt-launcher-nginx-vm-7lx4p:56200 (ID:23070) <- kube-system/coredns-9cf7fc5cc-7wr4m:53 (ID:42422) to-proxy FORWARDED (UDP)
+Dec 23 06:33:13.707: kubevirt-demo/virt-launcher-nginx-vm-7lx4p:51496 (ID:23070) <- kube-system/coredns-9cf7fc5cc-7wr4m:53 (ID:42422) dns-response proxy FORWARDED (DNS Answer RCode: Server Failure  TTL: 4294967295 (Proxy google.com. A))
+Dec 23 06:33:13.707: kubevirt-demo/virt-launcher-nginx-vm-7lx4p:56200 (ID:23070) <- kube-system/coredns-9cf7fc5cc-7wr4m:53 (ID:42422) dns-response proxy FORWARDED (DNS Answer RCode: Server Failure  TTL: 4294967295 (Proxy google.com. AAAA))
+Dec 23 06:33:14.762: kubevirt-demo/virt-launcher-nginx-vm-7lx4p:51496 (ID:23070) <- kube-system/coredns-9cf7fc5cc-7wr4m:53 (ID:42422) dns-response proxy FORWARDED (DNS Answer RCode: Server Failure  TTL: 4294967295 (Proxy google.com. A))
+Dec 23 06:33:14.762: kubevirt-demo/virt-launcher-nginx-vm-7lx4p:56200 (ID:23070) <- kube-system/coredns-9cf7fc5cc-7wr4m:53 (ID:42422) dns-response proxy FORWARDED (DNS Answer RCode: Server Failure  TTL: 4294967295 (Proxy google.com. AAAA))
+Dec 23 06:33:14.763: kubevirt-demo/virt-launcher-nginx-vm-7lx4p (ID:23070) -> 10.96.0.10 (ID:16777417) policy-verdict:L3-Only EGRESS ALLOWED (ICMPv4 DestinationUnreachable(Port))
+```
   
 
 See [https://docs.cilium.io/en/latest/security/policy/index.html](https://docs.cilium.io/en/latest/security/policy/index.html)
