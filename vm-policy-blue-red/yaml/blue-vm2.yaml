@@ -1,0 +1,72 @@
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  name: blue-vm2
+spec:
+  runStrategy: Always
+  template:
+    metadata:
+      labels:
+        kubevirt.io/size: small
+        kubevirt.io/domain: blue-vm2
+        name: blue-vm2
+        org: blue
+    spec:
+      domain:
+        cpu:
+          model: host-passthrough
+          cores: 2
+        devices:
+          disks:
+            - name: containerdisk
+              disk:
+                bus: virtio
+            - name: cloudinitdisk
+              disk:
+                bus: virtio
+          interfaces:
+          - name: default
+            masquerade: {}
+        resources:
+          requests:
+            memory: 4096Mi
+      networks:
+      - name: default
+        pod: {}
+      volumes:
+      - containerDisk:
+          image: tedezed/ubuntu-container-disk:22.0
+        name: containerdisk
+      - cloudInitNoCloud:
+          userData: |
+            #cloud-config
+            password: ubuntu
+            chpasswd: { expire: False }
+            runcmd:
+              - sudo apt update
+              - sudo apt install nginx -y
+              - echo "IyEvYmluL2Jhc2gKCiMgR2VuZXJhdGUgdGhlIFNlY3JldCBQYWdlCmVjaG8gIjxoMT5TZWNyZXQgUGFnZTwvaDE+PHAgc2VjcmV0IHBhZ2U8L3A+IiA+IC92YXIvd3d3L2h0bWwvc2VjcmV0Lmh0bWwKCkdlbmVyYXRlIFZNIERldGFpbHMgUGFnZSB3aXRoIEhvc3RuYW1lIGFuZCBJUAplY2hvICJcbjxoMT5WTURldGFpbHM8L2gxPjxwPk5hbWU6ICQoaG9zdG5hbWUpPC9wPjxwPklQOiAkKGhvc3RuYW1lIC1JKTwvcD48cD5Mb2NhbGU6ICQobG9jYWxlKTwvcD4iID4gL3Zhci93d3cvaHRtbC9kZXRhaWxzLmh0bWwK" | base64 --decode | sudo bash
+              - sudo sed -i 's|try_files $uri $uri/ =404;|try_files $uri $uri/ $uri.html =404;|' /etc/nginx/sites-available/default
+              - sudo systemctl restart nginx
+        name: cloudinitdisk
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: blue-vm2-service
+  namespace: default
+spec:
+  ports:
+  - port: 80
+    targetPort: 80
+    protocol: TCP
+    name: http
+  - port: 22
+    targetPort: 22
+    protocol: TCP
+    name: ssh
+  selector:
+    kubevirt.io/domain: blue-vm2
+    name: blue-vm2
+    org: blue
+
