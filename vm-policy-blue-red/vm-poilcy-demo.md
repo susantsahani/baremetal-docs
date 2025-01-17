@@ -147,6 +147,6 @@ debug3: ssh_connect_direct: entering
 
 ```
 
-
-(yaml configs)[https://github.com/susantsahani/baremetal-docs/tree/main/vm-policy-blue-red/yaml]
+Configs used for demo ->
+[yaml configs](https://github.com/susantsahani/baremetal-docs/tree/main/vm-policy-blue-red/yaml)
 
