@@ -36,7 +36,7 @@ PING 192.168.0.35 (192.168.0.35) 56(84) bytes of data.
 64 bytes from 192.168.0.35: icmp_seq=2 ttl=61 time=0.348 ms
 ```
 
-Apply an L3/L4 Policy
+-    Apply an L3/L4 Policy
 
 When using Cilium, endpoint IP addresses are irrelevant when defining security policies. Instead, you can use the labels assigned 
 to the pods to define security policies. The policies will be applied to the right pods based on the labels irrespective of where 
@@ -70,9 +70,9 @@ spec:
         protocol: TCP
 ```
 
-Apply
+- Apply
 
-```
+```bash
 > kc -f blue-policy.yaml
 ciliumnetworkpolicy.cilium.io/bluerule1 created
 
@@ -82,7 +82,7 @@ allow-within-namespace   25h
 bluerule1                26s
 rule1                    15h
 
-> kubectl describe cnp bluerule1
+> k describe cnp bluerule1
 Name:         bluerule1
 Namespace:    default
 Labels:       <none>
@@ -120,6 +120,7 @@ Events:                    <none>
 ```
 
 Let's test the policy by accessing blue vm ssh which hangs
+
 ```bash
 ubuntu@red-vm1:~$ ssh -vvv 192.168.0.133
 OpenSSH_8.9p1 Ubuntu-3ubuntu0.6, OpenSSL 3.0.2 15 Mar 2022
