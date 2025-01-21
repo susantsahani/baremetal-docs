@@ -148,6 +148,21 @@ debug3: ssh_connect_direct: entering
 
 ```
 
+Hubbl2
+```bash
+> hubble observe -n default -f
+Jan 21 05:43:31.974: default/virt-launcher-blue-vm1-5bs7d:57612 (ID:22352) <> default/virt-launcher-red-vm2-m6jpl:22 (ID:18468) policy-verdict:none INGRESS DENIED (TCP Flags: SYN)
+Jan 21 05:43:31.974: default/virt-launcher-blue-vm1-5bs7d:57612 (ID:22352) <> default/virt-launcher-red-vm2-m6jpl:22 (ID:18468) Policy denied DROPPED (TCP Flags: SYN)
+Jan 21 05:43:32.983: default/virt-launcher-blue-vm1-5bs7d:57612 (ID:22352) <> default/virt-launcher-red-vm2-m6jpl:22 (ID:18468) policy-verdict:none INGRESS DENIED (TCP Flags: SYN)
+Jan 21 05:43:32.983: default/virt-launcher-blue-vm1-5bs7d:57612 (ID:22352) <> default/virt-launcher-red-vm2-m6jpl:22 (ID:18468) Policy denied DROPPED (TCP Flags: SYN)
+Jan 21 05:43:34.999: default/virt-launcher-blue-vm1-5bs7d:57612 (ID:22352) <> default/virt-launcher-red-vm2-m6jpl:22 (ID:18468) policy-verdict:none INGRESS DENIED (TCP Flags: SYN)
+Jan 21 05:43:34.999: default/virt-launcher-blue-vm1-5bs7d:57612 (ID:22352) <> default/virt-launcher-red-vm2-m6jpl:22 (ID:18468) Policy denied DROPPED (TCP Flags: SYN)
+Jan 21 05:43:39.127: default/virt-launcher-blue-vm1-5bs7d:57612 (ID:22352) <> default/virt-launcher-red-vm2-m6jpl:22 (ID:18468) policy-verdict:none INGRESS DENIED (TCP Flags: SYN)
+Jan 21 05:43:39.127: default/virt-launcher-blue-vm1-5bs7d:57612 (ID:22352) <> default/virt-launcher-red-vm2-m6jpl:22 (ID:18468) Policy denied DROPPED (TCP Flags: SYN)
+
+
+```
+
 Configs used for demo ->
 [yaml configs](https://github.com/susantsahani/baremetal-docs/tree/main/vm-policy-blue-red/yaml)
 
