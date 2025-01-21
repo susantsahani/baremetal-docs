@@ -148,7 +148,7 @@ debug3: ssh_connect_direct: entering
 
 ```
 
-Hubbl2
+Hubble
 ```bash
 > hubble observe -n default -f
 Jan 21 05:43:31.974: default/virt-launcher-blue-vm1-5bs7d:57612 (ID:22352) <> default/virt-launcher-red-vm2-m6jpl:22 (ID:18468) policy-verdict:none INGRESS DENIED (TCP Flags: SYN)
