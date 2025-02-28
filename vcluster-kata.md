@@ -185,5 +185,36 @@ kube-system   coredns-cd6b9b47f-5vm8s   1/1     Running   0          48m
 
 ```
 
+How to connect to virtual cluster ?
 
+The vcluster connect command in the vCluster CLI establishes a connection between your local machine and a virtual Kubernetes cluster running inside a host cluster.
+It updates your kubeconfig file to point to the virtual cluster’s API server, allowing you to use kubectl (and other tools) to manage it as if it were a standalone cluster.
 
+```
+vcluster list
+       NAME     |      NAMESPACE       | STATUS  |    VERSION     | CONNECTED |   AGE    
+  --------------+----------------------+---------+----------------+-----------+----------
+    my-vcluster | vcluster-my-vcluster | Running | 0.24.0-alpha.1 |           | 1h7m18s  
+  
+ install  vcluster connect my-vcluster
+05:57:25 done vCluster is up and running
+05:57:25 done Switched active kube context to vcluster_my-vcluster_vcluster-my-vcluster_mgmt07-admin@mgmt07
+05:57:25 warn Since you are using port-forwarding to connect, you will need to leave this terminal open
+- Use CTRL+C to return to your previous kube context
+- Use `kubectl get namespaces` in another terminal to access the vcluster
+Forwarding from 127.0.0.1:12511 -> 8443
+Forwarding from [::1]:12511 -> 8443
+
+```
+
+```
+kubectl get nodes
+NAME        STATUS   ROLES    AGE   VERSION
+eksa-cp02   Ready    <none>   53m   v1.28.15
+
+```
+
+Stop it later with:
+```
+vcluster disconnect
+```
