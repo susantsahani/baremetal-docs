@@ -7,7 +7,7 @@ overhead than separate physical clusters. It’s a great fit for multi-tenancy, 
 Install vCluster CLI on Ubuntu
 
 Download latest release from [github](https://github.com/loft-sh/vcluster/releases)
-```
+```bash
 > wget https://github.com/loft-sh/vcluster/releases/download/v0.24.0-alpha.1/vcluster-linux-amd64
 > chmod +x vcluster-linux-amd64
 > sudo mv vcluster-linux-amd64 /usr/local/bin/vcluster
@@ -16,7 +16,7 @@ vcluster version 0.24.0-alpha.1
 ```
 
 Create a Virtual Cluster
-```
+```bash
  > vcluster create my-vcluster
 04:49:49 info Creating namespace vcluster-my-vcluster
 04:49:49 info Create vcluster my-vcluster...
@@ -30,7 +30,7 @@ Create a Virtual Cluster
 
 Notice it's not coming up
 
-```
+```bash
                              node.kubernetes.io/unreachable:NoExecute op=Exists for 300s                                                          │
 │ Events:                                                                                                                                           │
 │   Type     Reason            Age                    From               Message                                                                    │
@@ -42,18 +42,18 @@ Notice it's not coming up
 
 It requires PersistentVolumeClaims
 
-```
+```bash
 > kubectl get pvc -A
 NAMESPACE              NAME                 STATUS    VOLUME   CAPACITY   ACCESS MODES   STORAGECLASS   AGE
 vcluster-my-vcluster   data-my-vcluster-0   Pending                                                     4m34s
 ```
 
 let's create one 
-```
+```bash
 > sudo mkdir -p /mnt/data-my-vcluster-0
 ```
 
-```
+```bash
 > cat vcluster-pv.yaml
 apiVersion: v1
 kind: PersistentVolume
@@ -76,7 +76,7 @@ persistentvolume/data-my-vcluster-0 created
 
 Now the vcluster will come up
 
-```
+```bash
 > vcluster create my-vcluster
 04:49:49 info Creating namespace vcluster-my-vcluster
 04:49:49 info Create vcluster my-vcluster...
@@ -95,7 +95,7 @@ Forwarding from [::1]:10917 -> 8443
 ```
 
 verify the logs
-```
+```bash
    Type     Reason            Age                   From               Message                                                                     │
 │   ----     ------            ----                  ----               -------                                                                     │
 │   Warning  FailedScheduling  6m28s (x3 over 12m)   default-scheduler  0/1 nodes are available: pod has unbound immediate PersistentVolumeClaims.  │
@@ -120,7 +120,7 @@ verify the logs
 │   Normal   Started           6m6s                  kubelet            Started container syncer 
 ```
 
-```
+```bash
  > vcluster create my-vcluster
 ```
 1. Creates a namespace vcluster-my-vcluster in the host cluster.
@@ -128,15 +128,62 @@ verify the logs
 3. Switches your kubectl context to the virtual cluster.
 
 Test with Netshoot 
-```
+```bash
 > kubectl run netshoot --image=nicolaka/netshoot --restart=Never -- /bin/bash -c "sleep infinity"
 pod/netshoot created
 ```
 
-```
+```bash
 > kubectl exec -it netshoot -- /bin/bash
 netshoot:~# uname -a
 Linux netshoot 5.15.0-126-generic #136-Ubuntu SMP Wed Nov 6 10:38:22 UTC 2024 x86_64 Linux
 ```
+
+Integrate with Kata
+
+Create kata runtime class
+See [kata-docs](https://github.com/susantsahani/baremetal-docs/blob/main/configure-kata-containers.md)
+
+```bash
+> cat kata-runtimeclass.yaml
+apiVersion: node.k8s.io/v1
+kind: RuntimeClass
+metadata:
+  name: kata
+handler: kata
+> k create -f kata-runtimeclass.yaml
+runtimeclass.node.k8s.io/kata created
+```
+
+Test with Netshoot
+
+```bash
+> cat netshoot-kata.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: netshoot-kata
+spec:
+  runtimeClassName: kata
+  containers:
+  - name: netshoot
+    image: nicolaka/netshoot:latest
+    command: ["/bin/bash"]
+    args: ["-c", "sleep infinity"]
+    tty: true
+    stdin: true
+```
+```bash
+> k create -f netshoot-kata.yaml
+pod/netshoot-kata created
+
+> k get pods -A
+NAMESPACE     NAME                      READY   STATUS    RESTARTS   AGE
+default       netshoot                  1/1     Running   0          5m49s
+default       netshoot-kata             1/1     Running   0          11s
+kube-system   coredns-cd6b9b47f-5vm8s   1/1     Running   0          48m
+
+```
+
 
 
