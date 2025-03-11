@@ -128,6 +128,24 @@ Events:
 
 ```
 
+```
+<<K9s-Shell>> Pod: default/php-apache-kata-clh-67f67d6f89-ccbq5 | Container: php-apache 
+root@php-apache-kata-clh-67f67d6f89-ccbq5:/var/www/html# ip l
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN mode DEFAULT group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+    link/ether 52:c6:14:6a:52:4b brd ff:ff:ff:ff:ff:ff
+root@php-apache-kata-clh-67f67d6f89-ccbq5:/var/www/html# 
+
+```
+
+```
+40453 ?        S      0:00 /opt/kata/libexec/virtiofsd --syslog --cache=auto --shared-dir=/run/kata-containers/shared/sandboxes/0a074afb4cc4fdf0c2f
+  40454 ?        Sl     0:01 /opt/kata/bin/cloud-hypervisor --api-socket /run/vc/vm/0a074afb4cc4fdf0c2f223d5efc409d2697fb3cc66df922168014a8a936f76c3/
+  40459 ?        Sl     0:00 /opt/kata/libexec/virtiofsd --syslog --cache=auto --shared-dir=/run/kata-containers/shared/sandboxes/0a074afb4cc4fdf0c2f
+  40460 ?        I      0:00 [kworker/12:1-mm_percpu_wq]
+  
+```
 
 
 ```
