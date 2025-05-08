@@ -274,6 +274,92 @@ kube-system   coredns-664c8d69c4-hhwkp               1/1     Running   1 (3d5h a
 ```
 
 
+Automated script for create PVC and vcluster
+
+```
+auto.sh         connect.sh    get-vcluster.sh  my-vcluster.kubeconfig       vcluster-kubeconfig.yaml
+> cat auto.sh
+#!/bin/bash
+
+set -euo pipefail
+
+VCLUSTER_NAME="${1:-}"
+if [ -z "$VCLUSTER_NAME" ]; then
+  echo "Usage: $0 <vcluster-name>"
+  exit 1
+fi
+
+NAMESPACE="vcluster-$VCLUSTER_NAME"
+KUBECONFIG_FILE="./${VCLUSTER_NAME}-kubeconfig.yaml"
+
+# Automatically generate PVC name based on vcluster name
+PVC_NAME="data-$VCLUSTER_NAME-0"
+
+# Create PVC and corresponding PV first to avoid Pending state
+echo "🔍 Creating PVC and PV for '$PVC_NAME' in namespace '$NAMESPACE'..."
+
+HOST_PATH="/mnt/$PVC_NAME"
+sudo mkdir -p "$HOST_PATH"
+
+PV_MANIFEST=$(cat <<EOF
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: $PVC_NAME
+  namespace: $NAMESPACE
+spec:
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "$HOST_PATH"
+  persistentVolumeReclaimPolicy: Retain
+EOF
+)
+echo "$PV_MANIFEST" | kubectl apply -f -
+
+echo "✅ PVC and PV for '$PVC_NAME' are created."
+
+# Now, create the vCluster
+echo "🚀 Creating vCluster '$VCLUSTER_NAME' in namespace '$NAMESPACE'..."
+vcluster create "$VCLUSTER_NAME" -n "$NAMESPACE" --connect=false
+
+echo "🔍 Waiting for vCluster deployment to be created in namespace '$NAMESPACE'..."
+
+# Wait for the deployment to exist
+DEPLOY_NAME=""
+for i in {1..30}; do
+  DEPLOY_NAME=$(kubectl get deployment -n "$NAMESPACE" -l app=vcluster,release="$VCLUSTER_NAME" -o jsonpath="{.items[0].metadata.name}" 2>/dev/null || true)
+  if [ -n "$DEPLOY_NAME" ]; then
+    echo "✅ Found deployment: $DEPLOY_NAME"
+    break
+  fi
+  sleep 2
+done
+
+if [ -z "$DEPLOY_NAME" ]; then
+  echo "❌ Failed to find deployment after timeout."
+  exit 1
+fi
+
+# Wait for deployment to be available
+echo "⏳ Waiting for deployment '$DEPLOY_NAME' to become available..."
+kubectl wait deployment "$DEPLOY_NAME" -n "$NAMESPACE" --for=condition=Available=True --timeout=180s
+
+# Export kubeconfig
+echo "📦 Exporting kubeconfig to '$KUBECONFIG_FILE'..."
+vcluster connect "$VCLUSTER_NAME" -n "$NAMESPACE" --print > "$KUBECONFIG_FILE"
+
+echo "✅ vCluster '$VCLUSTER_NAME' is ready!"
+echo "🔗 Kubeconfig written to: $KUBECONFIG_FILE"
+echo "👉 Use: kubectl --kubeconfig $KUBECONFIG_FILE get ns"
+
+
+```
+
+
+
 Cloud Hypervisor is a modern, open-source Virtual Machine Monitor (VMM) designed for cloud-native workloads, and it offers several advantages when used with Kata Containers or other container runtimes in environments like Kubernetes or vcluster. Below are the key advantages of Cloud Hypervisor, particularly in the context of running Kata Containers:
 Advantages of Cloud Hypervisor
 Lightweight and Minimal Footprint:
