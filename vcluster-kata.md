@@ -141,47 +141,45 @@ Linux netshoot 5.15.0-126-generic #136-Ubuntu SMP Wed Nov 6 10:38:22 UTC 2024 x8
 
 Integrate with Kata
 
-Create kata runtime class
-See [kata-docs](https://github.com/susantsahani/baremetal-docs/blob/main/configure-kata-containers.md)
-
+runtimeClass is a built-in type in Kubernetes. To apply each Kata Containers runtimeClass:
 ```bash
-> cat kata-runtimeclass.yaml
-apiVersion: node.k8s.io/v1
-kind: RuntimeClass
-metadata:
-  name: kata
-handler: kata
-> k create -f kata-runtimeclass.yaml
-runtimeclass.node.k8s.io/kata created
+$ kubectl apply -f https://raw.githubusercontent.com/kata-containers/kata-containers/main/tools/packaging/kata-deploy/runtimeclasses/kata-runtimeClasses.yaml
+runtimeclass.node.k8s.io/kata-clh created
+runtimeclass.node.k8s.io/kata-cloud-hypervisor created
+runtimeclass.node.k8s.io/kata-dragonball created
+runtimeclass.node.k8s.io/kata-fc created
+runtimeclass.node.k8s.io/kata-qemu-coco-dev created
+runtimeclass.node.k8s.io/kata-qemu-nvidia-gpu-snp created
+runtimeclass.node.k8s.io/kata-qemu-nvidia-gpu-tdx created
+runtimeclass.node.k8s.io/kata-qemu-nvidia-gpu created
+runtimeclass.node.k8s.io/kata-qemu-runtime-rs created
+runtimeclass.node.k8s.io/kata-qemu-se-runtime-rs created
+runtimeclass.node.k8s.io/kata-qemu-se created
+runtimeclass.node.k8s.io/kata-qemu-sev created
+runtimeclass.node.k8s.io/kata-qemu-snp created
+runtimeclass.node.k8s.io/kata-qemu-tdx created
+runtimeclass.node.k8s.io/kata-qemu created
+runtimeclass.node.k8s.io/kata-remote created
+runtimeclass.node.k8s.io/kata-stratovirt created
 ```
 
-Test with Netshoot
+To run an example with kata-clh:
 
-```bash
-> cat netshoot-kata.yaml
-apiVersion: v1
-kind: Pod
-metadata:
-  name: netshoot-kata
-spec:
-  runtimeClassName: kata
-  containers:
-  - name: netshoot
-    image: nicolaka/netshoot:latest
-    command: ["/bin/bash"]
-    args: ["-c", "sleep infinity"]
-    tty: true
-    stdin: true
-```
-```bash
-> k create -f netshoot-kata.yaml
-pod/netshoot-kata created
+> kubectl apply -f https://raw.githubusercontent.com/kata-containers/kata-containers/main/tools/packaging/kata-deploy/examples/test-deploy-kata-clh.yaml
+service "php-apache-kata-clh" deleted
+deployment.apps/php-apache-kata-clh created
+service/php-apache-kata-clh created
 
 > k get pods -A
-NAMESPACE     NAME                      READY   STATUS    RESTARTS   AGE
-default       netshoot                  1/1     Running   0          5m49s
-default       netshoot-kata             1/1     Running   0          11s
-kube-system   coredns-cd6b9b47f-5vm8s   1/1     Running   0          48m
+NAMESPACE     NAME                                   READY   STATUS    RESTARTS       AGE
+default       kata-pod                               1/1     Running   0              40s
+default       nginx-7854ff8877-sgt8w                 1/1     Running   0              7m12s
+default       php-apache-kata-clh-67f67d6f89-wvtdf   1/1     Running   0              22s
+kube-system   coredns-664c8d69c4-hhwkp               1/1     Running   1 (3d4h ago)   7d19h
+
+root@kata-pod:/# uname -a
+Linux kata-pod 6.12.22 #1 SMP Fri Apr 25 06:19:46 UTC 2025 x86_64 GNU/Linux
+root@kata-pod:/# 
 
 ```
 
