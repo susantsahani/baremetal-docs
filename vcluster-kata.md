@@ -164,12 +164,14 @@ runtimeclass.node.k8s.io/kata-stratovirt created
 ```
 
 To run an example with kata-clh:
-
+```
 > kubectl apply -f https://raw.githubusercontent.com/kata-containers/kata-containers/main/tools/packaging/kata-deploy/examples/test-deploy-kata-clh.yaml
 service "php-apache-kata-clh" deleted
 deployment.apps/php-apache-kata-clh created
 service/php-apache-kata-clh created
+```
 
+```
 > k get pods -A
 NAMESPACE     NAME                                   READY   STATUS    RESTARTS       AGE
 default       kata-pod                               1/1     Running   0              40s
@@ -180,9 +182,7 @@ kube-system   coredns-664c8d69c4-hhwkp               1/1     Running   1 (3d4h a
 root@kata-pod:/# uname -a
 Linux kata-pod 6.12.22 #1 SMP Fri Apr 25 06:19:46 UTC 2025 x86_64 GNU/Linux
 root@kata-pod:/# 
-
 ```
-
 How to connect to virtual cluster ?
 
 The vcluster connect command in the vCluster CLI establishes a connection between your local machine and a virtual Kubernetes cluster running inside a host cluster.
@@ -209,7 +209,6 @@ Forwarding from [::1]:12511 -> 8443
 kubectl get nodes
 NAME        STATUS   ROLES    AGE   VERSION
 eksa-cp02   Ready    <none>   53m   v1.28.15
-
 ```
 
 Stop it later with:
@@ -220,7 +219,6 @@ vcluster disconnect
 Script to connect to vcluster run commands and disconnect
 
 ```
-
 > cat connect.sh
 #!/bin/bash
 
@@ -264,7 +262,6 @@ export KUBECONFIG=./vcluster-kubeconfig.yaml
 kubectl get nodes
 ```
 
-```
 Cloud Hypervisor is a modern, open-source Virtual Machine Monitor (VMM) designed for cloud-native workloads, and it offers several advantages when used with Kata Containers or other container runtimes in environments like Kubernetes or vcluster. Below are the key advantages of Cloud Hypervisor, particularly in the context of running Kata Containers:
 Advantages of Cloud Hypervisor
 Lightweight and Minimal Footprint:
