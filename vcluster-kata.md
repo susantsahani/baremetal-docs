@@ -359,6 +359,48 @@ echo "👉 Use: kubectl --kubeconfig $KUBECONFIG_FILE get ns"
 ```
 
 
+Automatically delete vcluster with pvc
+```
+#!/bin/bash
+
+set -euo pipefail
+
+VCLUSTER_NAME="${1:-}"
+if [ -z "$VCLUSTER_NAME" ]; then
+  echo "Usage: $0 <vcluster-name>"
+  exit 1
+fi
+
+NAMESPACE="vcluster-$VCLUSTER_NAME"
+PVC_NAME="data-$VCLUSTER_NAME-0"
+PV_NAME="$PVC_NAME"
+HOST_PATH="/mnt/$PVC_NAME"
+
+echo "🗑️   Deleting vCluster '$VCLUSTER_NAME' in namespace '$NAMESPACE'..."
+
+# Delete the vCluster
+vcluster delete "$VCLUSTER_NAME" -n "$NAMESPACE" || echo "⚠️  vCluster not found or already deleted."
+
+# Delete the PVC if it exists
+if kubectl get pvc "$PVC_NAME" -n "$NAMESPACE" &>/dev/null; then
+  echo "🧹 Deleting PVC '$PVC_NAME'..."
+  kubectl delete pvc "$PVC_NAME" -n "$NAMESPACE"
+fi
+
+# Delete the PV if it exists
+if kubectl get pv "$PV_NAME" &>/dev/null; then
+  echo "🧹 Deleting PV '$PV_NAME'..."
+  kubectl delete pv "$PV_NAME"
+fi
+
+# Remove the hostPath directory
+if [ -d "$HOST_PATH" ]; then
+  echo "🧹 Removing hostPath directory '$HOST_PATH'..."
+  sudo rm -rf "$HOST_PATH"
+fi
+
+
+```
 
 Cloud Hypervisor is a modern, open-source Virtual Machine Monitor (VMM) designed for cloud-native workloads, and it offers several advantages when used with Kata Containers or other container runtimes in environments like Kubernetes or vcluster. Below are the key advantages of Cloud Hypervisor, particularly in the context of running Kata Containers:
 Advantages of Cloud Hypervisor
