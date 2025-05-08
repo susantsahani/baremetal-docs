@@ -217,8 +217,54 @@ Stop it later with:
 vcluster disconnect
 ```
 
+Script to connect to vcluster run commands and disconnect
 
+```
 
+> cat connect.sh
+#!/bin/bash
+
+# === CONFIGURATION ===
+VCLUSTER_NAME="my-vcluster"
+VCLUSTER_NAMESPACE="vcluster-my-vcluster"
+KUBECONFIG_TMP=$(mktemp)
+COMMAND="kubectl get pods -A"  # Replace with your desired kubectl command
+
+# === CONNECT TO VCLUSTER IN BACKGROUND ===
+echo "[INFO] Connecting to vCluster..."
+vcluster connect "$VCLUSTER_NAME" -n "$VCLUSTER_NAMESPACE" --update-current=false --kube-config "$KUBECONFIG_TMP" > /dev/null 2>&1 &
+VCLUSTER_PID=$!
+
+# Wait for the port-forward to initialize
+sleep 5
+
+# === RUN THE COMMAND ===
+echo "[INFO] Running command inside vCluster: $COMMAND"
+KUBECONFIG="$KUBECONFIG_TMP" $COMMAND
+
+# === CLEANUP ===
+echo "[INFO] Cleaning up..."
+kill $VCLUSTER_PID >/dev/null 2>&1 || true
+rm -f "$KUBECONFIG_TMP"
+
+echo "[DONE]"
+
+```
+Get vCluster Kubeconfig
+```
+vcluster connect my-vcluster -n vcluster-my-vcluster --update-current=false --kube-config ./vcluster-kubeconfig.yaml
+```
+You can now run any kubectl command against your vCluster like this
+```
+KUBECONFIG=./vcluster-kubeconfig.yaml kubectl get pods
+```
+Or switch context temporarily:
+```
+export KUBECONFIG=./vcluster-kubeconfig.yaml
+kubectl get nodes
+```
+
+```
 Cloud Hypervisor is a modern, open-source Virtual Machine Monitor (VMM) designed for cloud-native workloads, and it offers several advantages when used with Kata Containers or other container runtimes in environments like Kubernetes or vcluster. Below are the key advantages of Cloud Hypervisor, particularly in the context of running Kata Containers:
 Advantages of Cloud Hypervisor
 Lightweight and Minimal Footprint:
