@@ -262,6 +262,17 @@ export KUBECONFIG=./vcluster-kubeconfig.yaml
 kubectl get nodes
 ```
 
+
+> vcluster connect my-vcluster -n vcluster-my-vcluster -- kubectl get pods -A
+11:06:22 done vCluster is up and running
+NAMESPACE     NAME                                   READY   STATUS    RESTARTS       AGE
+default       kata-pod                               1/1     Running   0              40m
+default       nginx-7854ff8877-sgt8w                 1/1     Running   0              46m
+default       php-apache-kata-clh-67f67d6f89-wvtdf   1/1     Running   0              39m
+kube-system   coredns-664c8d69c4-hhwkp               1/1     Running   1 (3d5h ago)   7d20h
+
+
+
 Cloud Hypervisor is a modern, open-source Virtual Machine Monitor (VMM) designed for cloud-native workloads, and it offers several advantages when used with Kata Containers or other container runtimes in environments like Kubernetes or vcluster. Below are the key advantages of Cloud Hypervisor, particularly in the context of running Kata Containers:
 Advantages of Cloud Hypervisor
 Lightweight and Minimal Footprint:
