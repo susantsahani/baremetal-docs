@@ -1,4 +1,10 @@
 #!/bin/bash
+# 1.	Takes an existing raw disk image (INPUT_RAW) as input.
+# 2.	Creates a new larger raw image to hold LUKS2 encryption header + original data.
+# 3.	Encrypts the entire new image using LUKS2.
+# 4.	Opens it via cryptsetup and copies the full raw image data into the LUKS container using dd.
+# 5.	Closes the LUKS mapping and enrolls the encrypted image with TPM2 for auto-unlock.
+
 set -e  # Stop on errors
 
 # Function to check and install a dependency if missing
